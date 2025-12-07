@@ -14,7 +14,7 @@ connectDB();
 app.use("/api", routes);
 
 app.get("", async (req, res) => {
-  return res.json({ status: "Working", version: "0.0.1" });
+  return res.json({ status: "Working", version: "0.0.2" });
 });
 
 app.post("", async (req, res) => {
