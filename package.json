@@ -2,10 +2,10 @@
   "name": "simple-blockchain-api",
   "version": "1.0.0",
   "type": "module",
-  "main": "src/index.js",
+  "main": "src/main.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
