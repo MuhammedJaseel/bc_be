@@ -5,7 +5,7 @@ setInterval(() => {
 }, 5000);
 
 export const chainId = async (params) => {
-  return "0x548C8"; // 346312; old: 0x11d9b;
+  return "0xcc70"; // 0x548C8 = 346312; old: 0x11d9b;
 };
 
 export const blockNumber = async (params) => {
@@ -45,3 +45,7 @@ export const getBlockByNumber = async (params) => {
     uncles: [],
   };
 };
+
+// console.log("........");
+// console.log((0x11d9b).toString());
+// console.log((52336).toString(16));

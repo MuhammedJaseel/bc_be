@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.get("/wallets", async (req, res) => {
   const _wallets = await gatAllWallets();
-  console.log(_wallets);
   const wallets = [];
   for (const w of _wallets)
     wallets.push({ a: w.a, b: formatEther(w.b) });

@@ -1,10 +1,14 @@
+import { ethers } from "ethers";
+import Wallets from "../schemas/wallets.js";
+import Block from "../schemas/block.js";
+
 const wallets = [
   {
-    a: "0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199",
+    a: "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
     b: "0xa18f07d736b90be550000000",
   },
   {
-    a: "0x347d5c8dc99bd5f70d429f350fb9578fd78a2f35",
+    a: "0x347D5C8Dc99Bd5F70d429F350FB9578fD78A2f35",
     b: "0xa18f07d736b90be550000000",
   },
 ];
@@ -20,37 +24,61 @@ export const blocks = [
   },
 ];
 
+// //////////////////////////////// Blocks /////////////////////////////////////
+
+export function gatBlocks() {
+  return Block.find().sort({ ca: -1 }).limit(100);
+}
+
+export function findCBlock() {
+  return Block.findOne().sort({ ca: -1 });
+}
+
+createBlock();
+
+export async function createBlock() {
+  let cBlock = await findCBlock();
+  if (!cBlock)
+    cBlock = {
+      h: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      n: -1,
+    };
+
+  const data = { hash: cBlock.h, number: cBlock.n + 1, timestamp: Date.now() };
+
+  const dataBytes = ethers.toUtf8Bytes(JSON.stringify(data));
+  const hash = ethers.keccak256(dataBytes);
+  console.log(hash);
+
+  // return Block.create({});
+}
+
+// //////////////////////////////// Wallets /////////////////////////////////////
+
 export async function gatAllWallets() {
-  return wallets;
+  try {
+    const count = await Wallets.countDocuments({});
+    if (count === 0) {
+      await Wallets.insertMany(wallets);
+    }
+  } catch (err) {
+    console.error("gatAllWallets error:", err);
+  }
+  return Wallets.find();
 }
 
 export async function findWallet(address) {
   if (!address || typeof address !== "string") return null;
-  const addr = address.toLowerCase();
-  return (
-    wallets.find(
-      (w) =>
-        (w.a && w.a.toLowerCase() === addr) ||
-        (w.b && w.b.toLowerCase() === addr)
-    ) || null
-  );
+  return Wallets.findOne({ a: ethers.getAddress(address) });
 }
 
 export function createWallet(body) {
-  wallets.push(body);
+  return Wallets.create(body);
 }
 
 export function updateWallet(a, body = {}) {
   if (!a || typeof a !== "string") return null;
-  const addr = a.toLowerCase();
-  const i = wallets.findIndex(
-    (w) =>
-      (w.a && w.a.toLowerCase() === addr) || (w.b && w.b.toLowerCase() === addr)
-  );
-  if (i === -1) return null;
-
-  wallets[i] = { ...wallets[i], ...body };
-  return wallets[i];
+  return Wallets.findOneAndUpdate({ a: ethers.getAddress(a) }, body);
 }
 
 export function findHash(hash) {

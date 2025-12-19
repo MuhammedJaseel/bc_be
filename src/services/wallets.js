@@ -1,6 +1,5 @@
 // import pkg from "js-sha3";
 import { Transaction, keccak256 } from "ethers";
-import walletModel from "../schemas/wallets.js";
 import { createWallet, findWallet, updateWallet } from "../modules/store.js";
 
 export const getBalance = async (params) => {
