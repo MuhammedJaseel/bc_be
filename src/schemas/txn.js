@@ -3,8 +3,19 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const txnSchema = new Schema({
-  h: { type: String, required: true, unique: true, index: true }, // transaction hash
-  s: { type: String, required: true, unique: true }, // signature
+  th: { type: String, required: true, unique: true, index: true }, // transaction hash
+  s: { type: String, required: true }, // signature
+  f: { type: String, required: true }, // from
+  t: { type: String, required: true }, // to
+  v: { type: String, required: true }, // value
+  n: { type: Number, required: true }, // nounce
+  gp: { type: String, required: true }, // gas price
+  gl: { type: String, required: true }, // gas limit  
+  gu: { type: String, required: true }, // gas user
+  bn: { type: Number }, // block number
+  bh: { type: String }, // block hash
+  st: { type: String, default: "P" }, // status P, C, F ( pending, confirmed, failed )
+  ca: { type: Date, required: true, default: Date.now }, // createdAt
 });
 
 export default model("Txn", txnSchema);

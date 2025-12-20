@@ -1,16 +1,17 @@
-import { ethers } from "ethers";
 import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
 const blockSchema = new Schema({
-  num: { type: String, required: true, unique: true, index: true }, // block number
-  h: { type: String, required: true, unique: true, index: true }, // block hash
+  bn: { type: Number, required: true, unique: true, index: true }, // block number
+  bh: { type: String, required: true, unique: true, index: true }, // block hash
   ph: { type: String, required: true, unique: true, index: true }, // parent hash
-  n: { type: String, required: true, unique: true, index: true }, // nonce
-  t: { type: String, required: true }, // timestamp
+  n: { type: String, required: true }, // nonce
+  ts: { type: Number, required: true }, // timestamp
+  m: { type: String, required: true }, // miner
+  gu: { type: String, required: true }, // gas used
   txs: { type: Array, required: true }, // transactions
-  ca: { type: Date, required: true, default: Date.now } // createdAt
+  ca: { type: Date, required: true, default: Date.now }, // createdAt
 });
 
 export default model("Block", blockSchema);
@@ -29,6 +30,5 @@ export default model("Block", blockSchema);
 // To: 0xReceiverAddress
 // Value (wei): 1000000000000000000
 // Gas Price: 10000000000
-
 
 // console.log("0x8be0b66abb13a57fc80d5545f0f6d7b3eb560c8fb63864c412b34054797c0b67");
