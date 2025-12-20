@@ -104,10 +104,7 @@ export async function mine() {
 }
 
 export const blockNumber = async () => {
-  // const cBlock = await getCBlock();
-  // return "0x" + cBlock.number.toString(16);
   let block = await Block.findOne().sort({ bn: -1 });
-  // console.log(block);
   if (block === null) return "0x00";
   return "0x" + block.bn.toString(16);
 };
@@ -187,7 +184,6 @@ export const getBlockByNumber = async (params) => {
 };
 
 export const getBlockByHash = async (params) => {
-  console.log(params);
   const blockHash = params?.[0];
   if (!blockHash || typeof blockHash !== "string")
     return {

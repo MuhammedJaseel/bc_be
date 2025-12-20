@@ -1,5 +1,9 @@
 import { CHAIN_ID, GAS_LIMIT, GAS_PRICE } from "./modules/static.js";
-import { blockNumber, getBlockByNumber } from "./services/chain.js";
+import {
+  blockNumber,
+  getBlockByHash,
+  getBlockByNumber,
+} from "./services/chain.js";
 import {
   getBalance,
   getTransactionByHash,
@@ -16,8 +20,6 @@ const routes = {
     return { result: await getBalance(params) };
   },
   eth_blockNumber: async (params) => {
-    // console.log(params);
-    // console.log({ result: BigInt(await blockNumber(params)) });
     return { result: await blockNumber(params) };
   },
   eth_getBlockByNumber: async (params) => {
@@ -51,27 +53,21 @@ const routes = {
   },
   eth_getCode: async () => {
     return { result: "0x" };
-  }
+  },
 };
 
 export default async function bcRouter(body) {
-  // console.log(body);
   if (Array.isArray(body)) {
     const results = [];
     for (let it of body) {
       console.log(it.method);
-      const result = await routes[it.method](it.params);
-      // console.log(result);
+      const result = await routes[it.method]?.(it.params);
       results.push({ id: it.id, jsonrpc: "2.0", ...result });
     }
-    // console.log(results);
     return results;
   } else {
     console.log(body.method);
-    const result = await routes[body.method](body.params);
-    // console.log(result);
+    const result = await routes[body.method]?.(body.params);
     return { id: body.id, jsonrpc: "2.0", ...result };
   }
 }
-
-// console.log((25000000000000000000000000000).toString(16));

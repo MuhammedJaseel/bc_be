@@ -22,8 +22,6 @@ export const getTransactionCount = async (params) => {
   const address = params?.[0];
   if (!address || typeof address !== "string") return null;
   const wallet = await Wallets.findOne({ a: ethers.getAddress(address) });
-  // console.log(wallet);
-  // console.log(address);
   if (!wallet) return null;
   const newNonce = wallet.n + 1;
   await Wallets.findOneAndUpdate(
@@ -35,7 +33,6 @@ export const getTransactionCount = async (params) => {
 
 export const sendRawTransaction = async (params) => {
   const sign = params[0];
-  console.log(sign);
   const signedTx = Transaction.from(sign);
 
   const txValue = new Decimal(signedTx.value);
