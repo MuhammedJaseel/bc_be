@@ -1,4 +1,5 @@
-import { blockNumber, chainId, getBlockByNumber } from "./services/chain.js";
+import { ESTIMATE_GAS, GAS_PRICE } from "./modules/static.js";
+import { blockNumber, getBlockByNumber } from "./services/chain.js";
 import {
   getBalance,
   getTransactionByHash,
@@ -7,10 +8,10 @@ import {
 } from "./services/wallets.js";
 
 const routes = {
-  eth_chainId: async (params) => {
-    return { result: await chainId(params) };
+  eth_chainId: async () => {
+    return { result: CHAIN_ID };
   },
-  eth_getBalance: async (params) => {    
+  eth_getBalance: async (params) => {
     return { result: await getBalance(params) };
   },
   eth_blockNumber: async (params) => {
@@ -19,17 +20,17 @@ const routes = {
   eth_getBlockByNumber: async (params) => {
     return { result: await getBlockByNumber(params) };
   },
-  eth_gasPrice: async (params) => {
-    return { result: "0x2e8e3416ed6f8" };
+  eth_gasPrice: async () => {
+    return { result: GAS_PRICE };
   },
-  eth_maxPriorityFeePerGas: async (params) => {
+  eth_maxPriorityFeePerGas: async () => {
     return { result: "0x3b9aca00" };
   },
   eth_getTransactionCount: async (params) => {
     return { result: "0x96" };
   },
-  eth_estimateGas: async (params) => {
-    return { result: "0x5208" };
+  eth_estimateGas: async () => {
+    return { result: ESTIMATE_GAS };
   },
   eth_sendRawTransaction: async (params) => sendRawTransaction(params),
   eth_getTransactionByHash: async (params) => {

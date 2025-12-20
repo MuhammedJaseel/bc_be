@@ -4,9 +4,6 @@ setInterval(() => {
   ETH_BLOCK++;
 }, 5000);
 
-export const chainId = async (params) => {
-  return "0xcc70"; // 0x548C8 = 346312; old: 0x11d9b;
-};
 
 export const blockNumber = async (params) => {
   return "0x" + ETH_BLOCK.toString(16);

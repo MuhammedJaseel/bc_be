@@ -72,7 +72,8 @@ export async function findWallet(address) {
   return Wallets.findOne({ a: ethers.getAddress(address) });
 }
 
-export function createWallet(body) {
+export function createWallet(a, b) {
+  const body = { a: ethers.getAddress(a), b };
   return Wallets.create(body);
 }
 
