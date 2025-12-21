@@ -60,9 +60,11 @@ const routes = {
     return {
       result: {
         oldestBlock: "0x0",
-        baseFeePerGas: ["0x3b9aca00"],
+        baseFeePerGas: [
+          "0x" + (BigInt(GAS_LIMIT) * BigInt(GAS_PRICE)).toString(16),
+        ],
         gasUsedRatio: [0.5],
-        reward: [["0x3b9aca00"]],
+        reward: ["0x" + (BigInt(GAS_LIMIT) * BigInt(GAS_PRICE)).toString(16)],
       },
     };
   },
