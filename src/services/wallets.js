@@ -51,8 +51,6 @@ export const sendRawTransaction = async (params) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  console.log(".........1");
-
   try {
     const updateResult = await Wallets.findOneAndUpdate(
       { a: ethers.getAddress(from.a), n: signedTx.nonce - 1 },
@@ -60,7 +58,6 @@ export const sendRawTransaction = async (params) => {
       { session }
     );
 
-    console.log(".........2");
     if (!updateResult) throw {};
 
     await Txn.create(
@@ -81,17 +78,13 @@ export const sendRawTransaction = async (params) => {
       ],
       { session }
     );
-    console.log(".........3");
 
     await session.commitTransaction();
     session.endSession();
     try {
-      // fetch(process.env.SCAN_API + "/rpcinfo?info=txn_added");
-      console.log(".........4");
+      fetch(process.env.SCAN_API + "/rpcinfo?info=txn_added");
     } catch (e) {}
-    // mine();
-    await mine();
-    console.log(".........5");
+    mine();
     return { result: signedTx.hash };
   } catch (err) {
     await session.abortTransaction();
