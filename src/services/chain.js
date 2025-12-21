@@ -36,6 +36,8 @@ async function getCBlock() {
 var IS_MINING = false;
 
 export async function mine() {
+  console.log("Mine Called");
+
   if (IS_MINING) {
     // setTimeout(() => {
     //   mine();
@@ -46,6 +48,8 @@ export async function mine() {
 
   const session = await mongoose.startSession();
   session.startTransaction();
+
+  console.log("Mine Sesion Started");
   try {
     const cBlock = await getCBlock();
 
@@ -75,6 +79,8 @@ export async function mine() {
         await Wallets.findOneAndUpdate({ a }, { b }, { session });
       }
 
+      console.log("Mine Sesion Running 000 ");
+
       let updateResult = await Txn.findOneAndUpdate(
         { th: tx.th, st: "P" },
         { st: "C", bn: cBlock.number, bh: blockHash },
@@ -99,6 +105,8 @@ export async function mine() {
       prevHash: blockHash,
     };
 
+    console.log("Mine Sesion Running 111 ");
+
     const MINER = ethers.getAddress(MINER_1);
     const totalGasUsedHex = "0x" + totalGasUsed.toNumber().toString(16);
 
@@ -120,6 +128,8 @@ export async function mine() {
 
     let miner = await Wallets.findOne({ a: MINER });
 
+    console.log("Mine Sesion Running 222 ");
+
     if (!miner) {
       let body = { a: ethers.getAddress(MINER), b: totalGasUsedHex };
       await Wallets.create([body], { session });
@@ -135,10 +145,12 @@ export async function mine() {
       // fetch(process.env.SCAN_API + "/rpcinfo?info=block_added");
     } catch (e) {}
   } catch (error) {
+    console.log("Mine Sesion Error ");
     await session.abortTransaction();
     session.endSession();
     console.log(error);
   }
+  console.log("Mine Sesion End ");
   IS_MINING = false;
 }
 
