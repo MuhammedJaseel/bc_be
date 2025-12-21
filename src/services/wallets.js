@@ -1,11 +1,14 @@
 import Decimal from "decimal.js";
-import crypto from "crypto";
 import { Transaction, ethers } from "ethers";
-import { updateWallet } from "../modules/store.js";
 import { GAS_LIMIT, GAS_PRICE } from "../modules/static.js";
 import { mine } from "./chain.js";
 import Wallets from "../schemas/wallets.js";
 import Txn from "../schemas/txn.js";
+
+function updateWallet(a, body = {}) {
+  if (!a || typeof a !== "string") return null;
+  return Wallets.findOneAndUpdate({ a: ethers.getAddress(a) }, body);
+}
 
 async function _findWallet(address) {
   if (!address || typeof address !== "string") return null;

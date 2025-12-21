@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./database.js";
-import routes from "./routes.js";
 import bcRouter from "./bcRouter.js";
 import cors from "cors";
 
@@ -14,10 +13,8 @@ app.use(cors());
 
 connectDB();
 
-app.use("/api", routes);
-
 app.get("", async (req, res) => {
-  return res.json({ status: "Working", version: "0.0.2" });
+  return res.json({ status: "Working", version: "1.0.2" });
 });
 
 app.post("", async (req, res) => {

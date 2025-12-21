@@ -4,8 +4,17 @@ import Txn from "../schemas/txn.js";
 import crypto from "crypto";
 import Decimal from "decimal.js";
 import Wallets from "../schemas/wallets.js";
-import { createWallet, updateWallet } from "../modules/store.js";
 import { ethers } from "ethers";
+
+function createWallet(a, b) {
+  const body = { a: ethers.getAddress(a), b };
+  return Wallets.create(body);
+}
+
+function updateWallet(a, body = {}) {
+  if (!a || typeof a !== "string") return null;
+  return Wallets.findOneAndUpdate({ a: ethers.getAddress(a) }, body);
+}
 
 var BLOCK = null;
 
