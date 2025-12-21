@@ -132,7 +132,7 @@ export async function mine() {
     await session.commitTransaction();
     session.endSession();
     try {
-      fetch(process.env.SCAN_API + "/rpcinfo?info=block_added");
+      // fetch(process.env.SCAN_API + "/rpcinfo?info=block_added");
     } catch (e) {}
   } catch (error) {
     await session.abortTransaction();
