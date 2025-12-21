@@ -2,7 +2,6 @@ import { GAS_LIMIT, MINER_1 } from "../modules/static.js";
 import Block from "../schemas/block.js";
 import Txn from "../schemas/txn.js";
 import crypto from "crypto";
-import Decimal from "decimal.js";
 import Wallets from "../schemas/wallets.js";
 import { ethers } from "ethers";
 import mongoose from "mongoose";
