@@ -5,16 +5,7 @@ import crypto from "crypto";
 import Decimal from "decimal.js";
 import Wallets from "../schemas/wallets.js";
 import { ethers } from "ethers";
-
-function createWallet(a, b) {
-  const body = { a: ethers.getAddress(a), b };
-  return Wallets.create(body);
-}
-
-function updateWallet(a, body = {}) {
-  if (!a || typeof a !== "string") return null;
-  return Wallets.findOneAndUpdate({ a: ethers.getAddress(a) }, body);
-}
+import mongoose from "mongoose";
 
 var BLOCK = null;
 
@@ -42,7 +33,14 @@ async function getCBlock() {
   }
 }
 
+var IS_MINING = false;
+
 export async function mine() {
+  if (IS_MINING) return setTimeout(mine, 5000);
+  IS_MINING = true;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const cBlock = await getCBlock();
 
@@ -63,18 +61,30 @@ export async function mine() {
     for (let tx of txns) {
       let to = await Wallets.findOne({ a: tx.t });
       if (!to) {
-        await createWallet(tx.t, tx.v);
+        let body = { a: ethers.getAddress(tx.t), b: tx.v };
+        await Wallets.create([body], { session });
       } else {
         let toBalance = new Decimal(to.b).plus(new Decimal(tx.v));
+        let a = ethers.getAddress(tx.t);
         let b = "0x" + toBalance.toNumber().toString(16);
-        await updateWallet(tx.t, { b });
+        await Wallets.findOneAndUpdate({ a }, { b }, { session });
       }
-      await Txn.findOneAndUpdate(
-        { th: tx.th },
-        { st: "C", bn: cBlock.number, bh: blockHash }
+
+      let updateResult = await Txn.findOneAndUpdate(
+        { th: tx.th, st: "P" },
+        { st: "C", bn: cBlock.number, bh: blockHash },
+        { session }
       );
-      txnHashes.push(tx.th);
-      totalGasUsed = totalGasUsed.plus(new Decimal(tx.gu));
+
+      if (updateResult.matchedCount === 1) {
+        await Wallets.findOneAndUpdate(
+          { a: tx.f },
+          { $inc: { cn: 1 } },
+          { session }
+        );
+        txnHashes.push(tx.th);
+        totalGasUsed = totalGasUsed.plus(new Decimal(tx.gu));
+      }
     }
 
     BLOCK = {
@@ -87,29 +97,44 @@ export async function mine() {
     const MINER = ethers.getAddress(MINER_1);
     const totalGasUsedHex = "0x" + totalGasUsed.toNumber().toString(16);
 
-    await Block.create({
-      bn: cBlock.number,
-      bh: blockHash,
-      ph: cBlock.prevHash,
-      n: "0x0000000000000000",
-      ts: cBlock.timestamp,
-      txs: txnHashes,
-      m: MINER,
-      gu: totalGasUsedHex,
-    });
+    await Block.create(
+      [
+        {
+          bn: cBlock.number,
+          bh: blockHash,
+          ph: cBlock.prevHash,
+          n: "0x0000000000000000",
+          ts: cBlock.timestamp,
+          txs: txnHashes,
+          m: MINER,
+          gu: totalGasUsedHex,
+        },
+      ],
+      { session }
+    );
 
     let miner = await Wallets.findOne({ a: MINER });
 
     if (!miner) {
-      await createWallet(MINER, totalGasUsedHex);
+      let body = { a: ethers.getAddress(MINER), b: totalGasUsedHex };
+      await Wallets.create([body], { session });
     } else {
       let minerNewBalance = new Decimal(miner.b).plus(totalGasUsed);
+      let a = ethers.getAddress(MINER);
       let b = "0x" + minerNewBalance.toNumber().toString(16);
-      await updateWallet(miner.a, { b });
+      await Wallets.findOneAndUpdate({ a }, { b }, { session });
     }
+    await session.commitTransaction();
+    session.endSession();
+    try {
+      fetch(process.env.SCAN_API + "/rpcinfo?info=block_added");
+    } catch (e) {}
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.log(error);
   }
+  IS_MINING = false;
 }
 
 export const blockNumber = async () => {

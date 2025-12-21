@@ -4,11 +4,7 @@ import { GAS_LIMIT, GAS_PRICE } from "../modules/static.js";
 import { mine } from "./chain.js";
 import Wallets from "../schemas/wallets.js";
 import Txn from "../schemas/txn.js";
-
-function updateWallet(a, body = {}) {
-  if (!a || typeof a !== "string") return null;
-  return Wallets.findOneAndUpdate({ a: ethers.getAddress(a) }, body);
-}
+import mongoose from "mongoose";
 
 async function _findWallet(address) {
   if (!address || typeof address !== "string") return null;
@@ -23,15 +19,13 @@ export const getBalance = async (params) => {
 
 export const getTransactionCount = async (params) => {
   const address = params?.[0];
+  const type = params?.[1];
   if (!address || typeof address !== "string") return null;
   const wallet = await Wallets.findOne({ a: ethers.getAddress(address) });
   if (!wallet) return null;
-  const newNonce = wallet.n + 1;
-  await Wallets.findOneAndUpdate(
-    { a: ethers.getAddress(address) },
-    { n: newNonce }
-  );
-  return "0x" + newNonce.toString(16);
+  if (type === "pending") return "0x" + (wallet.n + 1).toString(16);
+  if (type === "latest") return "0x" + wallet.cn.toString(16);
+  return null;
 };
 
 export const sendRawTransaction = async (params) => {
@@ -58,27 +52,56 @@ export const sendRawTransaction = async (params) => {
   }
 
   fromBalance -= txValue.plus(txGas);
-
   const b = "0x" + fromBalance.toString(16);
-  await updateWallet(from.a, { b });
 
-  await Txn.create({
-    th: signedTx.hash,
-    s: sign,
-    f: signedTx.from,
-    t: signedTx.to,
-    v: "0x" + new Decimal(signedTx.value).toNumber().toString(16),
-    n: signedTx.nonce,
-    gp: GAS_PRICE,
-    gl: GAS_LIMIT,
-    gu: "0x" + new Decimal(txGas).toNumber().toString(16),
-    bn: null,
-    bh: null,
-  });
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  mine();
+  try {
+    const updateResult = await Wallets.findOneAndUpdate(
+      { a: ethers.getAddress(from.a), n: signedTx.nonce - 1 },
+      { b, n: from.n + 1 },
+      { session }
+    );
 
-  return { result: signedTx.hash };
+    if (updateResult.matchedCount === 0) throw new Error();
+
+    await Txn.create(
+      [
+        {
+          th: signedTx.hash,
+          s: sign,
+          f: signedTx.from,
+          t: signedTx.to,
+          v: "0x" + new Decimal(signedTx.value).toNumber().toString(16),
+          n: signedTx.nonce,
+          gp: GAS_PRICE,
+          gl: GAS_LIMIT,
+          gu: "0x" + new Decimal(txGas).toNumber().toString(16),
+          bn: null,
+          bh: null,
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+    try {
+      fetch(process.env.SCAN_API + "/rpcinfo?info=txn_added");
+    } catch (e) {}
+    mine();
+    return { result: signedTx.hash };
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    return {
+      error: {
+        code: -32000,
+        message: "nonce too low",
+      },
+    };
+  }
 };
 
 export const getTransactionByHash = async (params) => {
@@ -117,7 +140,6 @@ export const getTransactionReceipt = async (params) => {
 
   if (!txn) return null;
   return {
-    // root: "0x0000000000000000000000000000000000000000000000000000000000000000",
     transactionHash: txn.th,
     transactionIndex: "0x0",
     blockHash: txn.bh,

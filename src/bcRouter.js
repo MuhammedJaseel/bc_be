@@ -41,7 +41,9 @@ const routes = {
   eth_estimateGas: async () => {
     return { result: GAS_LIMIT };
   },
-  eth_sendRawTransaction: async (params) => sendRawTransaction(params),
+  eth_sendRawTransaction: async (params) => {
+    return sendRawTransaction(params);
+  },
   eth_getTransactionByHash: async (params) => {
     return { result: await getTransactionByHash(params) };
   },
