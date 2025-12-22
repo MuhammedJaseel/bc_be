@@ -152,7 +152,7 @@ export async function mine() {
     console.log("Step 19");
     try {
       console.log("Step 20");
-      fetch(process.env.SCAN_API + "/rpcinfo?info=block_added");
+      fetch(process.env.SCAN_API + "/rpcinfo?info=block_added").catch(() => {});
       console.log("Step 21");
     } catch (e) {}
   } catch (error) {
