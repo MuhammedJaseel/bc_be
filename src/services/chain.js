@@ -47,7 +47,7 @@ export async function mine() {
   try {
     const cBlock = await getCBlock();
 
-    const txns = await Txn.find({ st: "P" });
+    const txns = await Txn.find({ st: "P" }, { session });
 
     const txnHashes = [];
     var totalGasUsed = BigInt(0);
@@ -67,7 +67,7 @@ export async function mine() {
       console.log("Step 2");
       let toAddress = ethers.getAddress(tx.t);
       console.log("Step 3");
-      let to = await Wallets.findOne({ a: toAddress });
+      let to = await Wallets.findOne({ a: toAddress }, { session });
       console.log("Step 4");
       if (!to) {
         let body = { a: toAddress, b: tx.v };
@@ -132,7 +132,7 @@ export async function mine() {
     );
     console.log("Step 14");
 
-    let miner = await Wallets.findOne({ a: MINER });
+    let miner = await Wallets.findOne({ a: MINER }, { session });
     console.log("Step 15");
 
     if (!miner) {
