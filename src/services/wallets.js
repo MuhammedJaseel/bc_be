@@ -40,6 +40,9 @@ export const sendRawTransaction = async (params) => {
   const signedTx = Transaction.from(sign);
 
   const txValue = BigInt(signedTx.value);
+
+  if (txValue < 0n) return null;
+
   const txGas = BigInt(GAS_PRICE) * BigInt(GAS_LIMIT);
 
   const from = await Wallets.findOne({ a: ethers.getAddress(signedTx.from) });
