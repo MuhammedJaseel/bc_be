@@ -34,10 +34,10 @@ async function getCBlock() {
 
 var IS_MINING = false;
 
-export async function mine() {
+export async function mineTransactins() {
   if (IS_MINING) {
-    setTimeout(() => mine(), 5000);
-    return;
+    setTimeout(() => mineTransactins(), 5000);
+    return { loading: true, succes: false };
   }
   IS_MINING = true;
 
@@ -147,6 +147,7 @@ export async function mine() {
   }
 
   IS_MINING = false;
+  return { succes: true };
 }
 
 export const blockNumber = async () => {

@@ -1,7 +1,6 @@
-import Decimal from "decimal.js";
 import { Transaction, ethers } from "ethers";
 import { GAS_LIMIT, GAS_PRICE } from "../modules/static.js";
-import { mine } from "./chain.js";
+import { mineTransactins } from "./chain.js";
 import Wallets from "../schemas/wallets.js";
 import Txn from "../schemas/txn.js";
 import mongoose from "mongoose";
@@ -94,7 +93,7 @@ export const sendRawTransaction = async (params) => {
     try {
       fetch(process.env.SCAN_API + "/rpcinfo?info=txn_added").catch(() => {});
     } catch (e) {}
-    mine();
+    mineTransactins();
     return { result: signedTx.hash };
   } catch (err) {
     await session.abortTransaction();
