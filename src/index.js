@@ -18,12 +18,13 @@ app.get("", async (req, res) => {
   return res.json({ status: "Working", version: "1.0.2" });
 });
 
-app.get("/mine", async (req, res) => {
-  return mineTransactins();
-});
-
 app.post("", async (req, res) => {
   return res.json(await bcRouter(req.body));
+});
+
+app.get("/mine", (req, res) => {
+  console.log("Mining mannualy");
+  return mineTransactins();
 });
 
 const PORT = process.env.PORT || 4501;

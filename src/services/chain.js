@@ -96,12 +96,7 @@ export async function mineTransactins() {
       }
     }
 
-    BLOCK = {
-      number: cBlock.number + 1,
-      nonce: "0x0000000000000000",
-      timestamp: new Date().getTime(),
-      prevHash: blockHash,
-    };
+    if (txnHashes.length === 0) throw {};
 
     const MINER = ethers.getAddress(MINER_1);
 
@@ -134,6 +129,14 @@ export async function mineTransactins() {
       let b = "0x" + minerNewBalance.toString(16);
       await Wallets.findOneAndUpdate({ a }, { b }, { session });
     }
+
+    BLOCK = {
+      number: cBlock.number + 1,
+      nonce: "0x0000000000000000",
+      timestamp: new Date().getTime(),
+      prevHash: blockHash,
+    };
+
     await session.commitTransaction();
     session.endSession();
 
