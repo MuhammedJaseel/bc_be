@@ -1,3 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+export const PORT = process.env.PORT || 4501;
+
+export const MONGO_URI = process.env.MONGO_URI;
+
 export const CHAIN_ID = process.env.CHAIN_ID;
 
 export const GAS_PRICE = process.env.GAS_PRICE;

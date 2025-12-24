@@ -17,16 +17,16 @@ const routes = {
     return { result: CHAIN_ID };
   },
   eth_getBalance: async (params) => {
-    return { result: await getBalance(params) };
+    return getBalance(params);
   },
   eth_blockNumber: async (params) => {
-    return { result: await blockNumber(params) };
+    return blockNumber(params);
   },
   eth_getBlockByNumber: async (params) => {
-    return { result: await getBlockByNumber(params) };
+    return getBlockByNumber(params);
   },
   eth_getBlockByHash: async (params) => {
-    return { result: await getBlockByHash(params) };
+    return getBlockByHash(params);
   },
   eth_gasPrice: async () => {
     return { result: GAS_PRICE };
@@ -36,7 +36,7 @@ const routes = {
   },
   eth_getTransactionCount: async (params) => {
     // TODO: Need to impliment quee to avoid duplication nonce
-    return { result: await getTransactionCount(params) };
+    return getTransactionCount(params);
   },
   eth_estimateGas: async () => {
     return { result: GAS_LIMIT };
@@ -45,10 +45,10 @@ const routes = {
     return sendRawTransaction(params);
   },
   eth_getTransactionByHash: async (params) => {
-    return { result: await getTransactionByHash(params) };
+    return getTransactionByHash(params);
   },
   eth_getTransactionReceipt: async (params) => {
-    return { result: await getTransactionReceipt(params) };
+    return getTransactionReceipt(params);
   },
   eth_call: async () => {
     return { result: "0x" };
@@ -74,13 +74,13 @@ export default async function bcRouter(body) {
   if (Array.isArray(body)) {
     const results = [];
     for (let it of body) {
-      // console.log(it.method);
+      console.log(it.method);
       const result = await routes[it.method]?.(it.params);
       results.push({ id: it.id, jsonrpc: "2.0", ...result });
     }
     return results;
   } else {
-    // console.log(body.method);
+    console.log(body.method);
     const result = await routes[body.method]?.(body.params);
     return { id: body.id, jsonrpc: "2.0", ...result };
   }

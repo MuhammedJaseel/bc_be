@@ -2,6 +2,13 @@ import { GAS_LIMIT } from "../modules/static.js";
 import Block from "../schemas/block.js";
 import mine from "./mine.js";
 
+const HD16 = "0x0000000000000000";
+const HD40 = "0x0000000000000000000000000000000000000000";
+const HD64 =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
+const HD512 =
+  "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
 var IS_MINING = false;
 
 export async function mineTransactins() {
@@ -17,8 +24,8 @@ export async function mineTransactins() {
 
 export const blockNumber = async () => {
   let block = await Block.findOne().sort({ bn: -1 });
-  if (block === null) return "0x00";
-  return "0x" + block.bn.toString(16);
+  if (block === null) return { result: "0x00" };
+  return { result: "0x" + block.bn.toString(16) };
 };
 
 export function gatBlocks() {
@@ -26,15 +33,14 @@ export function gatBlocks() {
 }
 
 export const getBlockByNumber = async (params) => {
-  // TODO: Need to add the filter full or not
+  // TODO: Need to add the filter full or
+  const e1 = {
+    code: -32602,
+    message: "invalid argument 0: hex number, expected string",
+  };
+
   const bn = params?.[0];
-  if (!bn || typeof bn !== "string")
-    return {
-      error: {
-        code: -32602,
-        message: "invalid argument 0: hex number, expected string",
-      },
-    };
+  if (!bn || typeof bn !== "string") return { error: e1 };
 
   var block = null;
 
@@ -43,10 +49,10 @@ export const getBlockByNumber = async (params) => {
     if (_block !== null) block = _block;
     else
       block = {
-        ph: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        h: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        n: "0x0000000000000000",
-        m: "0x0000000000000000000000000000000000000000",
+        ph: HD64,
+        h: HD64,
+        n: HD16,
+        m: HD40,
         txs: [],
         gu: "0x00",
         ts: 0,
@@ -54,94 +60,70 @@ export const getBlockByNumber = async (params) => {
       };
   } else {
     let _block = await Block.findOne({ bn });
-    if (_block === null)
-      return {
-        error: {
-          code: -32602,
-          message: "invalid argument 0: hex number, expected string",
-        },
-      };
+    if (_block === null) return { error: e1 };
     block = _block;
   }
 
   return {
-    parentHash: block?.ph,
-    sha3Uncles:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    miner: block?.m,
-    stateRoot:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    transactionsRoot:
-      "0x00000000000000000000000000000000000000000000000000000000000000000",
-    receiptsRoot:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    logsBloom:
-      "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    difficulty: "0xa0e335",
-    totalDifficulty: "0xa0e335",
-    size: "0x4aa",
-    number: "0x" + block?.bn.toString(16),
-    gasLimit: GAS_LIMIT,
-    gasUsed: block?.gu,
-    timestamp: block?.ts,
-    extraData:
-      "0x0000000000000000000000000000000000000000000000000000000000000000f90281f90168f84694f628ab7a38e0c190788e110e1bb91ceb356207c6b0afd0ac378c6332d8511ae87f094b7ac3c01ee942cd76cd66dd7fbe36dbb1d26c86cdf05968ae86f548d2cd2a0944a0d7f846942cc43fc90a9f695db73cc26e3737799da431ae88b08ba9b09714c9b8ce6b93fc20dc52e4dde4c440faef90adf3715a6c928b2ade6308094b1c52fb9332d1da6f85df1a4756f84694f59d2d81eb99777e8413ccf2eb6c46e831d37e45b0b35fdeb18dfec3e79ffd37dbdf4346084414e6b341b797774679d2ee1eda86fdc6ee8250bbb8804a2ee14123ab1c486ff8469494ca615b328707daa995bc3efe6aaadd10a1bdf9b08cad43045690cae18ee03457617d87c254110404b6421f5bd0a3b0f635f92f3465c4d1ffa4a126df7d4fee4156fbd985f846940c1d6d1e08d66948777b3ff3b5b4688e4733fdc7b0ac8d7f7a7bf6e03db4a08fe5557fd1835f591faa9639db758de774015eae4e91d4b39d0f1c1513fe534db47e679db0f2b841f04f89761cc3948fd006f92b7be3517f660838a913ff86269f4777b1b5df94d1407e2bda0a47d1f0cf45fdef268bafed4d2b5c3126a37ba43d2ee6d89b57a7f401f8631db860b94228ea334531657f9c1a5996e8cd340803314f5489466d0b4a2ff0707adb53981a5618e3371cadc6f59899f416441601b4816c5339f2067b8ff8979f8b9b23a8850dc0dcafda3c4c9682b450ab1b41b90397a6ac21627e348d7e643b74c823f8631db8608049916d0fc5a7f2ed46a2b0e32d6b9e8e7305613235766fcf47d21017ff32f5ff6b64098255ff2dd989ed75f35197cc0c74a00768be0532523f25bce276dd06ef48e2d2613d910abb55b84a3d9a538fba9940f4644d7f5ed827f5b40480057a880000000000000000",
-    mixHash:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    nonce: block?.n,
-    hash: block?.h,
-    transactions: block?.txs,
-    uncles: [],
+    result: {
+      parentHash: block?.ph,
+      sha3Uncles: HD64,
+      miner: block?.m,
+      stateRoot: HD64,
+      transactionsRoot: HD64,
+      receiptsRoot: HD64,
+      logsBloom: HD512,
+      difficulty: "0xa0e335",
+      totalDifficulty: "0xa0e335",
+      size: "0x4aa",
+      number: "0x" + block?.bn.toString(16),
+      gasLimit: GAS_LIMIT,
+      gasUsed: block?.gu,
+      timestamp: block?.ts,
+      extraData: "0x",
+      mixHash: HD64,
+      nonce: block?.n,
+      hash: block?.h,
+      transactions: block?.txs,
+      uncles: [],
+    },
   };
 };
 
 export const getBlockByHash = async (params) => {
+  const e1 = {
+    code: -32602,
+    message: "invalid argument 0: hex number, expected string",
+  };
+
   const blockHash = params?.[0];
-  if (!blockHash || typeof blockHash !== "string")
-    return {
-      error: {
-        code: -32602,
-        message: "invalid argument 0: hex number, expected string",
-      },
-    };
+  if (!blockHash || typeof blockHash !== "string") return { error: e1 };
 
   const block = await Block.findOne({ bh: blockHash });
-  if (!block) {
-    return {
-      error: {
-        code: -32602,
-        message: "invalid argument 0: hex number, expected string",
-      },
-    };
-  }
+  if (!block) return { error: e1 };
 
   return {
-    parentHash: block?.ph,
-    sha3Uncles:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    miner: block?.m,
-    stateRoot:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    transactionsRoot:
-      "0x00000000000000000000000000000000000000000000000000000000000000000",
-    receiptsRoot:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    logsBloom:
-      "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    difficulty: "0xa0e335",
-    totalDifficulty: "0xa0e335",
-    size: "0x4aa",
-    number: "0x" + block?.bn.toString(16),
-    gasLimit: GAS_LIMIT,
-    gasUsed: block?.gu,
-    timestamp: block?.ts,
-    extraData:
-      "0x0000000000000000000000000000000000000000000000000000000000000000f90281f90168f84694f628ab7a38e0c190788e110e1bb91ceb356207c6b0afd0ac378c6332d8511ae87f094b7ac3c01ee942cd76cd66dd7fbe36dbb1d26c86cdf05968ae86f548d2cd2a0944a0d7f846942cc43fc90a9f695db73cc26e3737799da431ae88b08ba9b09714c9b8ce6b93fc20dc52e4dde4c440faef90adf3715a6c928b2ade6308094b1c52fb9332d1da6f85df1a4756f84694f59d2d81eb99777e8413ccf2eb6c46e831d37e45b0b35fdeb18dfec3e79ffd37dbdf4346084414e6b341b797774679d2ee1eda86fdc6ee8250bbb8804a2ee14123ab1c486ff8469494ca615b328707daa995bc3efe6aaadd10a1bdf9b08cad43045690cae18ee03457617d87c254110404b6421f5bd0a3b0f635f92f3465c4d1ffa4a126df7d4fee4156fbd985f846940c1d6d1e08d66948777b3ff3b5b4688e4733fdc7b0ac8d7f7a7bf6e03db4a08fe5557fd1835f591faa9639db758de774015eae4e91d4b39d0f1c1513fe534db47e679db0f2b841f04f89761cc3948fd006f92b7be3517f660838a913ff86269f4777b1b5df94d1407e2bda0a47d1f0cf45fdef268bafed4d2b5c3126a37ba43d2ee6d89b57a7f401f8631db860b94228ea334531657f9c1a5996e8cd340803314f5489466d0b4a2ff0707adb53981a5618e3371cadc6f59899f416441601b4816c5339f2067b8ff8979f8b9b23a8850dc0dcafda3c4c9682b450ab1b41b90397a6ac21627e348d7e643b74c823f8631db8608049916d0fc5a7f2ed46a2b0e32d6b9e8e7305613235766fcf47d21017ff32f5ff6b64098255ff2dd989ed75f35197cc0c74a00768be0532523f25bce276dd06ef48e2d2613d910abb55b84a3d9a538fba9940f4644d7f5ed827f5b40480057a880000000000000000",
-    mixHash:
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-    nonce: block?.n,
-    hash: block?.h,
-    transactions: block?.txs,
-    uncles: [],
+    result: {
+      parentHash: block?.ph,
+      sha3Uncles: HD64,
+      miner: block?.m,
+      stateRoot: HD64,
+      transactionsRoot: HD64,
+      receiptsRoot: HD64,
+      logsBloom: HD512,
+      difficulty: "0xa0e335",
+      totalDifficulty: "0xa0e335",
+      size: "0x4aa",
+      number: "0x" + block?.bn.toString(16),
+      gasLimit: GAS_LIMIT,
+      gasUsed: block?.gu,
+      timestamp: block?.ts,
+      extraData: "0x",
+      mixHash: HD64,
+      nonce: block?.n,
+      hash: block?.h,
+      transactions: block?.txs,
+      uncles: [],
+    },
   };
 };

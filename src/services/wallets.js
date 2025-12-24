@@ -19,19 +19,19 @@ initAppWallet();
 
 export const getBalance = async (params) => {
   const a = params?.[0];
-  if (!a || typeof a !== "string") return null;
+  if (!a || typeof a !== "string") return { result: null };
   const wallet = await Wallets.findOne({ a: ethers.getAddress(a) });
-  return wallet?.b || "0x0";
+  return { result: wallet?.b || "0x0" };
 };
 
 export const getTransactionCount = async (params) => {
   const address = params?.[0];
   const type = params?.[1];
-  if (!address || typeof address !== "string") return null;
+  if (!address || typeof address !== "string") return { result: null };
   const wallet = await Wallets.findOne({ a: ethers.getAddress(address) });
-  if (!wallet) return "0x0";
-  if (type === "latest") return "0x" + wallet.cn.toString(16);
-  return "0x" + (wallet.n + 1).toString(16);
+  if (!wallet) return { result: "0x0" };
+  if (type === "latest") return { result: "0x" + wallet.n.toString(16) };
+  return { result: "0x" + (wallet.n + 1).toString(16) };
 };
 
 export const sendRawTransaction = async (params) => {
@@ -40,7 +40,7 @@ export const sendRawTransaction = async (params) => {
 
   const txValue = BigInt(signedTx.value);
 
-  if (txValue < 0n) return null;
+  if (txValue < 0n) return { result: null };
 
   const txGas = BigInt(GAS_PRICE) * BigInt(GAS_LIMIT);
 
@@ -103,52 +103,57 @@ export const sendRawTransaction = async (params) => {
 
 export const getTransactionByHash = async (params) => {
   const txHash = params?.[0];
-  if (!txHash || typeof txHash !== "string") return null;
+  if (!txHash || typeof txHash !== "string") return { result: null };
   const txn = await Txn.findOne({ th: txHash });
-  if (!txn) return null;
+
+  if (!txn) return { result: null };
 
   const signedTx = Transaction.from(txn.s);
-
   const sig = JSON.parse(JSON.stringify(signedTx)).sig;
 
   return {
-    hash: txn.th,
-    to: txn.t,
-    from: txn.f,
-    nonce: txn.n,
-    value: txn.v,
-    gasPrice: txn.gp,
-    gas: txn.gu,
-    input: "0x",
-    v: "0x" + sig.v.toString(16),
-    r: sig.r,
-    s: sig.s,
-    blockHash: txn.bh,
-    blockNumber: txn.bn,
-    transactionIndex: null,
-    type: "0x0",
+    result: {
+      hash: txn.th,
+      to: txn.t,
+      from: txn.f,
+      nonce: txn.n,
+      value: txn.v,
+      gasPrice: txn.gp,
+      gas: txn.gu,
+      input: "0x",
+      v: "0x" + sig.v.toString(16),
+      r: sig.r,
+      s: sig.s,
+      blockHash: txn.bh,
+      blockNumber: txn.bn,
+      transactionIndex: null,
+      type: "0x0",
+    },
   };
 };
 
 export const getTransactionReceipt = async (params) => {
   const txHash = params?.[0];
-  if (!txHash || typeof txHash !== "string") return null;
-  const txn = await Txn.findOne({ th: txHash, st: "C" });
 
-  if (!txn) return null;
+  if (!txHash || typeof txHash !== "string") return { result: null };
+  const txn = await Txn.findOne({ th: txHash, st: "C" });
+  if (!txn) return { result: null };
+
   return {
-    transactionHash: txn.th,
-    transactionIndex: "0x0",
-    blockHash: txn.bh,
-    blockNumber: txn.bn,
-    from: txn.f,
-    to: txn.t,
-    cumulativeGasUsed: txn.gu,
-    gasUsed: txn.gu,
-    contractAddress: null,
-    logs: [],
-    logsBloom:
-      "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    status: "0x1",
+    result: {
+      transactionHash: txn.th,
+      transactionIndex: "0x0",
+      blockHash: txn.bh,
+      blockNumber: txn.bn,
+      from: txn.f,
+      to: txn.t,
+      cumulativeGasUsed: txn.gu,
+      gasUsed: txn.gu,
+      contractAddress: null,
+      logs: [],
+      logsBloom:
+        "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      status: "0x1",
+    },
   };
 };

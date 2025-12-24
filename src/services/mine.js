@@ -6,31 +6,8 @@ import Wallets from "../schemas/wallets.js";
 import { ethers } from "ethers";
 import mongoose from "mongoose";
 
-var BLOCK = null;
-
-async function getCBlock() {
-  if (BLOCK !== null) return BLOCK;
-  let block = await Block.findOne().sort({ bn: -1 });
-  if (block) {
-    BLOCK = {
-      number: block.bn + 1,
-      nonce: "0x0000000000000000",
-      timestamp: new Date().getTime(),
-      prevHash: block.bh,
-    };
-    return BLOCK;
-  }
-  if (!block) {
-    BLOCK = {
-      number: 1,
-      nonce: "0x0000000000000000",
-      timestamp: new Date().getTime(),
-      prevHash:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-    };
-    return BLOCK;
-  }
-}
+const dummyHash =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export default async function mine() {
   let responseTransactiCount = 0;
@@ -39,47 +16,45 @@ export default async function mine() {
   session.startTransaction();
 
   try {
-    const cBlock = await getCBlock();
+    let newBl = await Block.findOne().sort({ bn: -1 });
+    if (newBl) newBl = { bn: newBl.bn + 1, ph: newBl.bh };
+    else newBl = { bn: 1, bh: dummyHash };
+
+    const bn = newBl.bn;
+    const ph = newBl.ph;
+    const m = ethers.getAddress(MINER_1);
+    const ts = new Date().getTime();
 
     const txns = await Txn.find({ st: "P" }, null, { session });
 
     const txnHashes = [];
     var totalGasUsed = BigInt(0);
 
-    const hashRow = JSON.stringify({
-      number: cBlock.number,
-      prevHash: cBlock.prevHash,
-      data: "",
-    });
-
-    const blockHash =
-      "0x" + crypto.createHash("sha256").update(hashRow).digest("hex");
+    const hashRow = JSON.stringify({ number: bn, prevHash: ph, data: "" });
+    const bh = "0x" + crypto.createHash("sha256").update(hashRow).digest("hex");
 
     for (let tx of txns) {
       let toAddress = ethers.getAddress(tx.t);
-
       let to = await Wallets.findOne({ a: toAddress }, null, { session });
 
       if (!to) {
         let body = { a: toAddress, b: tx.v };
-
         await Wallets.create([body], { session });
       } else {
         let toBalance = BigInt(to.b) + BigInt(tx.v);
-
         let a = toAddress;
         let b = "0x" + toBalance.toString(16);
 
         await Wallets.findOneAndUpdate({ a }, { b }, { session });
       }
 
-      let updateResult = await Txn.findOneAndUpdate(
+      let updated = await Txn.findOneAndUpdate(
         { th: tx.th, st: "P" },
-        { st: "C", bn: cBlock.number, bh: blockHash },
+        { st: "C", bn, bh },
         { session }
       );
 
-      if (updateResult) {
+      if (updated) {
         await Wallets.findOneAndUpdate(
           { a: tx.f },
           { $inc: { cn: 1 } },
@@ -92,44 +67,23 @@ export default async function mine() {
 
     if (txnHashes.length === 0) throw {};
 
-    const MINER = ethers.getAddress(MINER_1);
-
     const totalGasUsedHex = "0x" + totalGasUsed.toString(16);
 
-    await Block.create(
-      [
-        {
-          bn: cBlock.number,
-          bh: blockHash,
-          ph: cBlock.prevHash,
-          n: "0x0000000000000000",
-          ts: cBlock.timestamp,
-          txs: txnHashes,
-          m: MINER,
-          gu: totalGasUsedHex,
-        },
-      ],
-      { session }
-    );
+    const n = "0x0000000000000000";
+    const txs = txnHashes;
+    const gu = totalGasUsedHex;
+    await Block.create([{ bn, bh, ph, n, ts, txs, m, gu }], { session });
 
-    let miner = await Wallets.findOne({ a: MINER }, null, { session });
+    let miner = await Wallets.findOne({ a: m }, null, { session });
 
     if (!miner) {
-      let body = { a: MINER, b: totalGasUsedHex };
+      let body = { a, b: totalGasUsedHex };
       await Wallets.create([body], { session });
     } else {
       let minerNewBalance = BigInt(miner.b) + totalGasUsed;
-      let a = MINER;
       let b = "0x" + minerNewBalance.toString(16);
-      await Wallets.findOneAndUpdate({ a }, { b }, { session });
+      await Wallets.findOneAndUpdate({ a: m }, { b }, { session });
     }
-
-    BLOCK = {
-      number: cBlock.number + 1,
-      nonce: "0x0000000000000000",
-      timestamp: new Date().getTime(),
-      prevHash: blockHash,
-    };
 
     responseTransactiCount = txnHashes.length;
 
@@ -142,7 +96,6 @@ export default async function mine() {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.log(error);
   }
 
   return { txsCount: responseTransactiCount };
