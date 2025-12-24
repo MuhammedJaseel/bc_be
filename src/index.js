@@ -24,6 +24,13 @@ await connectDB();
 await connectLocalServer();
 
 app.get("", async (req, res) => {
+  console.log(IS_LOCAL_SERVER, req.hostname);
+
+  console.log(
+    IS_LOCAL_SERVER &&
+      (req.hostname === LIVE_APP_URL || req.hostname === "localhost")
+  );
+
   if (
     IS_LOCAL_SERVER &&
     (req.hostname === LIVE_APP_URL || req.hostname === "localhost")
