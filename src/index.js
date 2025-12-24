@@ -34,7 +34,7 @@ app.post("", async (req, res) => {
         method: req.method,
         url: targetUrl,
         headers: { ...req.headers, host: new URL(LOCAL_SERVER).host },
-        data: ["GET", "HEAD"].includes(req.method) ? undefined : req.body,
+        data: req.body,
         validateStatus: () => true,
       };
       const response = await axios(axiosConfig);
