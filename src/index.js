@@ -22,11 +22,8 @@ await connectDB();
 await connectLocalServer();
 
 app.get("", async (req, res) => {
-  if (
-    IS_LOCAL_SERVER &&
-    (req.hostname.split("vercel.app").length === 2 ||
-      req.hostname === "localhost")
-  ) {
+  console.log("...." + req.hostname.split("vercel.app").length === 2);
+  if (IS_LOCAL_SERVER && req.hostname.split("vercel.app").length === 2) {
     try {
       const targetUrl = `${LOCAL_SERVER}${req.url}`;
 
