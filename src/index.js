@@ -28,9 +28,9 @@ app.get("", async (req, res) => {
       const axiosConfig = {
         method: req.method,
         url: targetUrl,
-        headers: { ...req.headers, host: new URL(LOCAL_SERVER).host },
-        data: req.body,
-        validateStatus: () => true,
+        headers: { host: new URL(LOCAL_SERVER).host },
+        // data: req.body,
+        // validateStatus: () => true,
       };
       console.log(targetUrl);
       console.log(axiosConfig);
