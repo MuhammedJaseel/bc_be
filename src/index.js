@@ -32,17 +32,18 @@ app.get("", async (req, res) => {
         // data: req.body,
         // validateStatus: () => true,
       };
-      console.log(targetUrl);
-      console.log(axiosConfig);
 
       const response = await axios(axiosConfig);
-      return res.status(response.status).send(response.data);
+
+      return res.json({ app: "rpc1", status: "Working", version: "1.0.5_" });
+
+      // return res.status(response.status).send(response.data);
     } catch (err) {
       connectLocalServer();
       return res.status(500).send("Server Error");
     }
   }
-  return res.json({ app: "rpc1", status: "Working", version: "1.0.4" });
+  return res.json({ app: "rpc1", status: "Working", version: "1.0.5" });
 });
 
 app.post("", async (req, res) => {
