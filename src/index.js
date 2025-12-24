@@ -29,14 +29,16 @@ app.post("", async (req, res) => {
   if (IS_LOCAL_SERVER && req.hostname.split("vercel.app").length === 2) {
     try {
       const targetUrl = `${LOCAL_SERVER}${req.url}`;
-
       const axiosConfig = {
         method: req.method,
         url: targetUrl,
         headers: { ...req.headers, host: new URL(LOCAL_SERVER).host },
         data: req.body,
         validateStatus: () => true,
-      };
+      };    
+      console.log(targetUrl);
+      console.log(axiosConfig);
+        
       const response = await axios(axiosConfig);
       return res.status(response.status).send(response.data);
     } catch (err) {
