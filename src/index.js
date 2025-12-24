@@ -18,22 +18,14 @@ app.use(express.json());
 
 app.use(cors());
 
-const LIVE_APP_URL = "rpc1-hq0s1tblr-muhammedjaseels-projects.vercel.app";
-
 await connectDB();
 await connectLocalServer();
 
 app.get("", async (req, res) => {
-  console.log(IS_LOCAL_SERVER, req.hostname);
-
-  console.log(
-    IS_LOCAL_SERVER &&
-      (req.hostname === LIVE_APP_URL || req.hostname === "localhost")
-  );
-
   if (
     IS_LOCAL_SERVER &&
-    (req.hostname === LIVE_APP_URL || req.hostname === "localhost")
+    (req.hostname.split("vercel.app").length === 2 ||
+      req.hostname === "localhost")
   ) {
     try {
       const targetUrl = `${LOCAL_SERVER}${req.url}`;
