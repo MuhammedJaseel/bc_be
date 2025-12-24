@@ -35,9 +35,9 @@ app.get("", async (req, res) => {
 
       // const response = await axios(axiosConfig);
 
-      await axios.get(LOCAL_SERVER);
+      // await axios.get(LOCAL_SERVER);
 
-      return res.json({ app: "rpc1", status: "Working", version: "1.0.5_" });
+      return res.json({ app: "rpc1", status: "Working", version: "1.0.5_", LOCAL_SERVER });
 
       // return res.status(response.status).send(response.data);
     } catch (err) {
