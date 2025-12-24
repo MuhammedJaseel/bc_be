@@ -69,24 +69,23 @@ export const sendRawTransaction = async (params) => {
 
     if (!updateResult) throw {};
 
-    await Txn.create(
-      [
-        {
-          th: signedTx.hash,
-          s: sign,
-          f: signedTx.from,
-          t: signedTx.to,
-          v: "0x" + signedTx.value.toString(16),
-          n: signedTx.nonce,
-          gp: GAS_PRICE,
-          gl: GAS_LIMIT,
-          gu: "0x" + txGas.toString(16),
-          bn: null,
-          bh: null,
-        },
-      ],
-      { session }
-    );
+    const newTxn = [
+      {
+        th: signedTx.hash,
+        s: sign,
+        f: signedTx.from,
+        t: signedTx.to,
+        v: "0x" + signedTx.value.toString(16),
+        n: signedTx.nonce,
+        gp: GAS_PRICE,
+        gl: GAS_LIMIT,
+        gu: "0x" + txGas.toString(16),
+        bn: null,
+        bh: null,
+      },
+    ];
+
+    await Txn.create(newTxn, { session });
 
     await session.commitTransaction();
     session.endSession();
@@ -98,12 +97,7 @@ export const sendRawTransaction = async (params) => {
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    return {
-      error: {
-        code: -32000,
-        message: "nonce too low",
-      },
-    };
+    return { error: { code: -32000, message: "nonce too low" } };
   }
 };
 
