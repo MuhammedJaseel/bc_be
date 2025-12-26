@@ -15,12 +15,10 @@ export default async function miner(minerAddress) {
   session.startTransaction();
 
   try {
-    const signs = await Signs.find({ st: "I" }, null, { session }).sort({
-      ts: -1,
-    });
+    const signs = await Signs.find({ st: "I" }, null).sort({ ts: -1 });
     if (signs.length === 0) throw {};
 
-    let newBl = await Block.findOne(null, null, { session }).sort({ bn: -1 });
+    let newBl = await Block.findOne(null, null).sort({ bn: -1 });
     if (newBl) newBl = { bn: newBl.bn + 1, ph: newBl.bh };
     else newBl = { bn: 1, ph: DH64 };
 
@@ -42,7 +40,7 @@ export default async function miner(minerAddress) {
       const ta = ethers.getAddress(signedTx.to);
       const txGas = signedTx.gasPrice * signedTx.gasLimit;
 
-      const from = await Wallets.findOne({ a: fa }, null, { session });
+      const from = await Wallets.findOne({ a: fa }, null);
 
       var fromB = BigInt(from?.b || "-1");
 
