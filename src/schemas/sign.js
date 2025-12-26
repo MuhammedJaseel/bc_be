@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 
 const signsSchema = new Schema(
   {
-    sn: { type: String }, // sign
+    sn: { type: String, unique: true }, // sign
     st: { type: String, default: "I" }, // I C F Initated Complated Failed
     ts: { type: Number, default: new Date().getTime() }, // timestamp
   },

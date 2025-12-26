@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import Signs from "../schemas/sign.js";
 
 const D8 = "00000000";
-const DH64 = "0x" + D8 + D8 + D8 + D8 + D8 + D8 + D8 + D8;
+const DH64 = "0x" + D8.repeat(8);
 
 export default async function miner(minerAddress) {
   let result = null;
@@ -15,7 +15,9 @@ export default async function miner(minerAddress) {
   session.startTransaction();
 
   try {
-    const signs = await Signs.find({ st: "I" }, null, { session });
+    const signs = await Signs.find({ st: "I" }, null, { session }).sort({
+      ts: -1,
+    });
     if (signs.length === 0) throw {};
 
     let newBl = await Block.findOne(null, null, { session }).sort({ bn: -1 });
@@ -33,7 +35,6 @@ export default async function miner(minerAddress) {
     var totalGas = BigInt(0);
 
     for (let it of signs) {
-      // console.log(it);
       const sign = it.sn;
       const signedTx = Transaction.from(sign);
       const value = signedTx.value;
@@ -42,6 +43,7 @@ export default async function miner(minerAddress) {
       const txGas = signedTx.gasPrice * signedTx.gasLimit;
 
       const from = await Wallets.findOne({ a: fa }, null, { session });
+
       var fromB = BigInt(from?.b || "-1");
 
       let failed = fromB < value + txGas;
@@ -49,27 +51,26 @@ export default async function miner(minerAddress) {
 
       await Signs.findByIdAndUpdate(it._id, { st }, { session });
 
-      try {
-        const newTxn = [
-          {
-            th: signedTx.hash,
-            f: fa,
-            t: ta,
-            v: String(value),
-            tn: signedTx.nonce,
-            gp: signedTx.gasPrice,
-            gl: signedTx.gasLimit,
-            gu: String(txGas),
-            bn: bn,
-            bh: bh,
-            s: sign,
-            st,
-          },
-        ];
-        await Txn.create(newTxn, { session });
-      } catch (err) {
-        if (err.code === 11000) failed = true;
-        else throw err;
+      let txn = await Txn.findOne({ th: signedTx.hash }, null, { session });
+      if (txn) {
+        console.log("Skiped");
+        failed = true;
+      } else {
+        const newTxn = {
+          th: signedTx.hash,
+          f: fa,
+          t: ta,
+          v: String(value),
+          tn: signedTx.nonce,
+          gp: signedTx.gasPrice,
+          gl: signedTx.gasLimit,
+          gu: String(txGas),
+          bn: bn,
+          bh: bh,
+          s: sign,
+          st,
+        };
+        await Txn.create([newTxn], { session });
       }
 
       if (!failed) {
@@ -97,6 +98,8 @@ export default async function miner(minerAddress) {
       }
     }
 
+    if (txs.length === 0) throw {};
+
     const gu = String(totalGas);
     await Block.create([{ bn, bh, ph, n, txs, m, gu }], { session });
 
@@ -112,7 +115,7 @@ export default async function miner(minerAddress) {
     session.endSession();
     result = { bn, bh, txs };
   } catch (err) {
-    console.log(err);
+    console.log("err");
     await session.abortTransaction();
     session.endSession();
   }

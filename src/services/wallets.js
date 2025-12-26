@@ -52,8 +52,13 @@ export const sendRawTransaction = async (params) => {
         "The sender's account balance is too low to cover the required fee for this transaction. Please top up your account.",
     };
   }
-  await Signs.create({ sn });
-  miner(MINER_1);
+  try {
+    await Signs.create({ sn });
+  } catch (error) {
+    return { result: null };
+  } finally {
+    miner(MINER_1);
+  }
   return { result: signedTx.hash };
 };
 
