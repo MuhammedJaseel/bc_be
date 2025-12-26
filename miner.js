@@ -1,5 +1,4 @@
 import { MINER_2, MONGO_URI } from "./src/modules/static.js";
-import mine from "./src/services/mine.js";
 import mongoose from "mongoose";
 import miner from "./src/services/miner.js";
 
@@ -22,6 +21,4 @@ const mineByTimer = async () => {
 };
 
 await connectDB();
-// mineByTimer();
-const mined = await miner(MINER_2);
-console.log(mined);
+mineByTimer();
