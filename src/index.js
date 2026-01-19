@@ -13,7 +13,12 @@ app.use(cors());
 await connectDB();
 
 app.get("", async (req, res) => {
-  return res.json({ app: "rpc1", status: "Working", version: "1.0.5" });
+  return res.json({
+    app: "rpc1",
+    status: "Working",
+    version: "1.0.5",
+    tech: "ExpressJS",
+  });
 });
 
 app.post("", async (req, res) => {
