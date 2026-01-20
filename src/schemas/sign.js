@@ -6,7 +6,7 @@ const signsSchema = new Schema(
   {
     sn: { type: String, unique: true }, // sign
     st: { type: String, default: "I" }, // I C F Initated Complated Failed
-    ts: { type: Number, default: new Date().getTime() }, // timestamp
+    ts: { type: Number, default: Date.now }, // timestamp
   },
   { versionKey: false }
 );

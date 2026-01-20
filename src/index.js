@@ -8,7 +8,6 @@ import { WebSocketServer } from "ws";
 
 const app = express();
 app.use(express.json());
-const connectedClients = new Set();
 
 app.use(cors());
 
@@ -36,6 +35,8 @@ const server = app.listen(PORT, () =>
 );
 
 const wss = new WebSocketServer({ server });
+
+const connectedClients = new Set();
 
 wss.on("connection", (ws) => {
   connectedClients.add(ws);

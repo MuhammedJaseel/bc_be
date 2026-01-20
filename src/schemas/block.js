@@ -11,7 +11,7 @@ const blockSchema = new Schema(
     m: { type: String, required: true }, // miner
     gu: { type: String, required: true }, // gas used
     txs: { type: Array, required: true }, // transactions
-    ts: { type: Number, default: new Date().getTime() }, // timestamp
+    ts: { type: Number, default: Date.now }, // timestamp
   },
   { versionKey: false }
 );

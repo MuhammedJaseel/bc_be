@@ -16,7 +16,7 @@ const txnSchema = new Schema(
     bn: { type: Number }, // block number
     bh: { type: String }, // block hash
     st: { type: String, required: true }, // status S, P, F ( Succes, Pending, Failed )
-    ts: { type: Number, default: new Date().getTime() }, // timestamp
+    ts: { type: Number, default: Date.now }, // timestamp
   },
   { versionKey: false },
 );

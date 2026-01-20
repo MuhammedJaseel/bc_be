@@ -7,7 +7,7 @@ const walletsSchema = new Schema(
     a: { type: String, required: true, unique: true, index: true }, // address
     b: { type: String, required: true, default: "0" }, // balance
     n: { type: Number, required: true, default: 0 }, // nounce
-    ts: { type: Number, default: new Date().getTime() }, // timestamp
+    ts: { type: Number, default: Date.now }, // timestamp
   },
   { versionKey: false }
 );
