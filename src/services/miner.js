@@ -5,6 +5,7 @@ import Wallets from "../schemas/wallets.js";
 import { ethers, Transaction } from "ethers";
 import mongoose from "mongoose";
 import Signs from "../schemas/sign.js";
+import { sendToAllSocket } from "../index.js";
 
 const D8 = "00000000";
 const DH64 = "0x" + D8.repeat(8);
@@ -49,26 +50,14 @@ export default async function miner(minerAddress) {
 
       await Signs.findByIdAndUpdate(it._id, { st }, { session });
 
-      let txn = await Txn.findOne({ th: signedTx.hash }, null, { session });
-      if (txn) {
+      let txn = await Txn.findOneAndUpdate(
+        { th: signedTx.hash, st: "P" },
+        { st, bn, bh },
+        { session },
+      );
+      if (!txn) {
         console.log("Skiped");
         failed = true;
-      } else {
-        const newTxn = {
-          th: signedTx.hash,
-          f: fa,
-          t: ta,
-          v: String(value),
-          tn: signedTx.nonce,
-          gp: signedTx.gasPrice,
-          gl: signedTx.gasLimit,
-          gu: String(txGas),
-          bn: bn,
-          bh: bh,
-          s: sign,
-          st,
-        };
-        await Txn.create([newTxn], { session });
       }
 
       if (!failed) {
@@ -76,7 +65,7 @@ export default async function miner(minerAddress) {
         await Wallets.findOneAndUpdate(
           { a: fa, n: signedTx.nonce - 1, b: fromB },
           { b, n: from.n + 1 },
-          { session }
+          { session },
         );
         let to = await Wallets.findOne({ a: ta }, null, { session });
         if (to) {
@@ -84,7 +73,7 @@ export default async function miner(minerAddress) {
           await Wallets.findOneAndUpdate(
             { a: ta, b: to.b },
             { b },
-            { session }
+            { session },
           );
         } else {
           if (b !== 0n)
@@ -112,6 +101,7 @@ export default async function miner(minerAddress) {
     await session.commitTransaction();
     session.endSession();
     result = { bn, bh, txs };
+    sendToAllSocket(result);
   } catch (err) {
     // console.log(err);
     await session.abortTransaction();

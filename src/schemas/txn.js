@@ -13,12 +13,12 @@ const txnSchema = new Schema(
     gp: { type: String, required: true }, // gas price
     gl: { type: String, required: true }, // gas limit
     gu: { type: String, required: true }, // gas user
-    bn: { type: Number, required: true }, // block number
-    bh: { type: String, required: true }, // block hash
-    st: { type: String, required: true }, // status S, F ( Succes, Failed )
+    bn: { type: Number }, // block number
+    bh: { type: String }, // block hash
+    st: { type: String, required: true }, // status S, P, F ( Succes, Pending, Failed )
     ts: { type: Number, default: new Date().getTime() }, // timestamp
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 export default model("Txn", txnSchema);

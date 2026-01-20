@@ -3,8 +3,7 @@ import { GAS_LIMIT, GAS_PRICE, MINER_1 } from "../modules/static.js";
 import Wallets from "../schemas/wallets.js";
 import Signs from "../schemas/sign.js";
 import Txn from "../schemas/txn.js";
-
-import miner from "./miner.js";
+import mongoose from "mongoose";
 
 async function initAppWallet() {
   // This will automatically create the 'wallets' collection if it doesn't
@@ -52,12 +51,31 @@ export const sendRawTransaction = async (params) => {
         "The sender's account balance is too low to cover the required fee for this transaction. Please top up your account.",
     };
   }
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    await Signs.create({ sn });
+    const txGas = signedTx.gasPrice * signedTx.gasLimit;
+    const newTxn = {
+      th: signedTx.hash,
+      f: signedTx.from,
+      t: signedTx.to,
+      v: String(signedTx.value),
+      tn: signedTx.nonce,
+      gp: signedTx.gasPrice,
+      gl: signedTx.gasLimit,
+      gu: String(txGas),
+      s: sn,
+      st: "P",
+    };
+    await Signs.create([{ sn }], { session });
+    await Txn.create([newTxn], { session });
+    await session.commitTransaction();
+    session.endSession();
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     return { result: null };
-  } finally {
-    miner(MINER_1);
   }
   return { result: signedTx.hash };
 };
