@@ -66,7 +66,7 @@ const mineByTimer = async () => {
   if (mined) console.log(mined);
   setTimeout(() => {
     mineByTimer();
-  }, 1000);
+  }, 3000);
 };
 
 mineByTimer();
