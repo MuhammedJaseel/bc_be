@@ -106,7 +106,8 @@ export const getTransactionByHash = async (params) => {
       r: sig.r,
       s: sig.s,
       transactionIndex: "0x0",
-      type: txn.st === "S" ? "0x1" : "0x0",
+      type: "0x0",
+      // type: txn.st === "S" ? "0x1" : "0x0",
       accessList: [],
     },
   };
@@ -115,7 +116,7 @@ export const getTransactionByHash = async (params) => {
 export const getTransactionReceipt = async (params) => {
   const txHash = params?.[0];
   if (!txHash || typeof txHash !== "string") return { result: null };
-  const txn = await Txn.findOne({ th: txHash, st: "S" });
+  const txn = await Txn.findOne({ th: txHash, st: { $ne: "F" } });
   if (!txn) return { result: null };
 
   return {
@@ -132,7 +133,8 @@ export const getTransactionReceipt = async (params) => {
       logs: [],
       logsBloom:
         "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      type: txn.st === "S" ? "0x1" : "0x0",
+      type: "0x0",
+      status: txn.st === "S" ? "0x1" : "0x0",
     },
   };
 };
