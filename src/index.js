@@ -17,7 +17,7 @@ app.get("", async (req, res) => {
   return res.json({
     app: "rpc1",
     status: "Working",
-    version: "1.0.7",
+    version: "1.0.8",
     tech: "ExpressJS",
   });
 });
