@@ -1,4 +1,5 @@
 import express from "express";
+import axios from "axios";
 import bcRouter from "./bcRouter.js";
 import cors from "cors";
 import { connectDB } from "./modules/database.js";
@@ -47,6 +48,10 @@ wss.on("connection", (ws) => {
 });
 
 export function sendToAllSocket(payload) {
+  axios.post(`${process.env.SCAN_API}/webhook/new-txn`).catch((err) => {
+    console.log("Failed to send webhook to scan-api");
+  });
+
   const msg = typeof payload === "string" ? payload : JSON.stringify(payload);
   for (const ws of connectedClients) {
     if (ws.readyState === 1) {

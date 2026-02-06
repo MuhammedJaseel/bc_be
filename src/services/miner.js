@@ -102,6 +102,7 @@ export default async function miner(minerAddress) {
     session.endSession();
     result = { bn, bh, txs };
     sendToAllSocket(result);
+    
   } catch (err) {
     // console.log(err);
     await session.abortTransaction();
